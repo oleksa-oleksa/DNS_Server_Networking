@@ -1,7 +1,3 @@
-prog: authorative_server.o stub_resolver.o
-	gcc -o server authorative_server.o
-	gcc -o client stub_resolver.o
-
-server_client.o: authorative_server.c stub_resolver.c
-	gcc -c authorative_server.c
-	gcc -c stub_resolver.c
+prog: src/authorative_server.c src/stub_resolver.c 
+	gcc -o server src/authorative_server.c
+	gcc -o client src/stub_resolver.c
