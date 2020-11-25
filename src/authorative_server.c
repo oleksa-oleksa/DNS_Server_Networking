@@ -12,6 +12,7 @@
 #define SERVER_IP 	"127.0.0.10"
 
 int main() {
+	printf("Authorative server startet.\n");
 	int sockfd;
 	char buffer[MAXLINE];
 	char *hello = "ACK";
