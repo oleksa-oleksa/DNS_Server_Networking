@@ -50,4 +50,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+# Mac, IDE
 .DS_Store
+.idea
