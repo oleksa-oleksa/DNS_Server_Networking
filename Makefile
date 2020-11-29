@@ -6,13 +6,13 @@ AUTH = server
 STUB = client
 
 CXX = g++
-CXXFLAGS = -Wall -O2
+CXXFLAGS = -Wall -O2 -std=c++11
 LIBS = -ljson-c
 
 all: $(AUTH) $(STUB)
 
 $(AUTH):
-	$(CXX) $(CXXFLAGS) src/authorative_server.cpp $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/authorative_server.cpp $(LIBS) -o $@
 
 $(STUB):
 	$(CXX) $(CXXFLAGS) src/stub_resolver.cpp $(LIBS) -o $@
