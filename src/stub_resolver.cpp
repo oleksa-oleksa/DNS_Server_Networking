@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include <json-c/json.h>
+#include <unistd.h>
 
 #include "udp.hpp"
 
@@ -49,7 +50,7 @@ int main()
 		scanf("%s", input);
 		parse_to_json(input, temp_buf);
 
-string sndstr = string(temp_buf);
+        string sndstr = string(temp_buf);
 		udp.send(sndstr, SERVER_IP);
 		printf("Sent message \"%s\" to server at %s:%d.\n", sndstr.c_str(), SERVER_IP, UDPPORT);
 

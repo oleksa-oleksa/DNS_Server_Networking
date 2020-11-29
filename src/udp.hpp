@@ -4,7 +4,6 @@
 
 #ifndef _UDP_H_
 #define _UDP_H_
-
 #define UDPPORT 53053
 #define BUFSIZE 4096
 #define SOCKERR "Error: No socket - failed to create or bind\n"
