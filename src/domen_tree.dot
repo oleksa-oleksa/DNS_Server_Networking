@@ -1,0 +1,17 @@
+digraph  tree {
+    root -> telematik
+    root -> fuberlin
+    telematik -> switch;
+    switch -> www;
+    switch -> mail;
+    telematik -> router;
+    router -> news;
+    router -> shop;
+    fuberlin -> homework;
+    homework -> easy;
+    homework -> hard;
+    fuberlin -> pcpools
+    pcpools -> linux
+    pcpools -> macos
+    pcpools -> windows
+}

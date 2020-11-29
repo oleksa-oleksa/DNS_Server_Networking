@@ -9,13 +9,16 @@ CXX = g++
 CXXFLAGS = -Wall -O2 -std=c++11
 LIBS = -ljson-c
 
-all: $(AUTH) $(STUB)
+all: $(AUTH) $(STUB) $(DB)
 
 $(AUTH):
-	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/authorative_server.cpp $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) src/authorative_server.cpp $(LIBS) -o $@
+
+$(DB):
+	$(CXX) $(CXXFLAGS) src/dns_db.cpp $(LIBS) -o $@
 
 $(STUB):
 	$(CXX) $(CXXFLAGS) src/stub_resolver.cpp $(LIBS) -o $@
 
 clean:
-	rm $(AUTH) $(STUB)
+	rm $(AUTH) $(STUB) $(DB)

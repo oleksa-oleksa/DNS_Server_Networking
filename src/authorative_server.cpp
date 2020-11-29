@@ -10,9 +10,11 @@
 using namespace std;
 using namespace udp;
 
-int main()
+int main(int argc, char **argv)
 {
-	printf("Authorative server startet.\n");
+
+
+    printf("Server started.\n");
 	string hello = "ACK";
 
     Udp udp(SERVER_IP, UDPPORT);

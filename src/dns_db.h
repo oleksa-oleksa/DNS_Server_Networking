@@ -19,7 +19,7 @@ struct DnsRecord {
 
 typedef struct DnsRecord DnsRecord;
 
-class DnsDb{
+class DnsDb {
 private:
     typedef shared_ptr<DnsRecord> PDnsRecord;
     vector<PDnsRecord> db;
