@@ -22,9 +22,12 @@ bool read_config(const char *server_name) {
         printf("Could not open file %s", filename.c_str());
         return 1;
     }
-
-    while (fgets(str, MAXCHAR, fp) != NULL)
+    char s1[20], s2[20];
+    while (fgets(str, MAXCHAR, fp) != NULL) {
         printf("%s", str);
+        sscanf(str, "%s %s", s1, s2);
+        printf("GOT: %s: %s\n", s1, s2);
+    }
     fclose(fp);
     return 0;
 }
