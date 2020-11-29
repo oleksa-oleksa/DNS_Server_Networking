@@ -11,8 +11,8 @@
 using namespace std;
 
 struct DnsRecord {
-    string domain;
     string ip;
+    string domain;
     // Flags see https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
     unsigned short record_type;
 };
@@ -29,7 +29,7 @@ public:
     DnsDb(const DnsDb &other) : db(other.db) {}
 
     const DnsRecord *find_record(const string &name);
-    bool add_record(DnsRecord *record);
+    bool add_record(const DnsRecord &record);
 };
 
 

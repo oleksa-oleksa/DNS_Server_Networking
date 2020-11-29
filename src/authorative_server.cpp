@@ -12,7 +12,7 @@
 using namespace std;
 using namespace udp;
 
-bool read_config(const char *server_name) {
+bool read_config(const char *server_name, DnsDb *db) {
     FILE *fp;
     char str[MAXCHAR];
     string filename = string("dns_db/") + server_name;
@@ -26,7 +26,12 @@ bool read_config(const char *server_name) {
     while (fgets(str, MAXCHAR, fp) != NULL) {
         printf("%s", str);
         sscanf(str, "%s %s", s1, s2);
-        printf("GOT: %s: %s\n", s1, s2);
+        //printf("GOT: %s: %s\n", s1, s2);
+        DnsRecord record;
+        record.ip = s1;
+        record.domain = s2;
+        record.record_type = 1;
+        db->add_record(record);
     }
     fclose(fp);
     return 0;
@@ -36,6 +41,7 @@ int main(int argc, char **argv)
 {
     char *server_ip;
     char *server_name;
+    DnsDb db;
 
     if (argc != 3) {
         printf("command line parameter: server_ip name");
@@ -49,13 +55,14 @@ int main(int argc, char **argv)
     printf("Server started: %s: %s\n", server_ip, server_name);
 	string hello = "ACK";
 
-	read_config(server_name);
+	read_config(server_name, &db);
+	printf("%s", db.find_record("telematik")->ip.c_str());
 
     Udp udp(server_ip, UDPPORT);
     string recvmsg;   // received message
     string remaddr;   // remote address
 
-	while(1)
+    while(1)
    {
         udp.recv(recvmsg, remaddr);
         printf("Server: Received message \"%s\" from %s\n", recvmsg.c_str(), remaddr.c_str());

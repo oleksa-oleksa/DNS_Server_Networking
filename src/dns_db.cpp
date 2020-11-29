@@ -4,12 +4,14 @@
 
 #include "dns_db.h"
 #include <algorithm>
+#include <memory>
 
-bool DnsDb::add_record(DnsRecord *new_record) {
+bool DnsDb::add_record(const DnsRecord &new_record) {
 
-    const DnsRecord *existing = find_record(new_record->domain);
+    const DnsRecord *existing = find_record(new_record.domain);
     if (existing == NULL) {
-        db.push_back(shared_ptr<DnsRecord>(new_record));
+        DnsRecord *p = new DnsRecord(new_record);
+        db.push_back(shared_ptr<DnsRecord>(p));
         return true;
     } else {
         return false;

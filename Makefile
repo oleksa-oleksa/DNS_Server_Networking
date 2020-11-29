@@ -12,7 +12,7 @@ LIBS = -ljson-c
 all: $(AUTH) $(STUB) $(DB)
 
 $(AUTH):
-	$(CXX) $(CXXFLAGS) src/authorative_server.cpp $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/authorative_server.cpp $(LIBS) -o $@
 
 $(DB):
 	$(CXX) $(CXXFLAGS) src/dns_db.cpp $(LIBS) -o $@
