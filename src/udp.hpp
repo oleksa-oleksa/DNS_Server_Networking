@@ -1,3 +1,7 @@
+#if (__OSX__) ||  (__APPLE__)
+#define MSG_CONFIRM 0x800	/* Confirm path validity */
+#endif
+
 #ifndef _UDP_H_
 #define _UDP_H_
 
