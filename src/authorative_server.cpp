@@ -12,12 +12,22 @@ using namespace udp;
 
 int main(int argc, char **argv)
 {
+    char *server_ip;
+    char *server_name;
 
+    if (argc != 3) {
+        printf("command line parameter: server_ip name");
+        return -2;
+    }
+    else {
+        server_ip = argv[1];
+        server_name = argv[2];
+    }
 
-    printf("Server started.\n");
+    printf("Server started: %s: %s\n", server_ip, server_name);
 	string hello = "ACK";
 
-    Udp udp(SERVER_IP, UDPPORT);
+    Udp udp(server_ip, UDPPORT);
     string recvmsg;   // received message
     string remaddr;   // remote address
 

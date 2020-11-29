@@ -39,9 +39,13 @@ public:
         m_locaddr.sin_port = htons(port);
 
         // create and bind local socket
-        if((m_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) >= 0)
-            if((::bind(m_sock, (struct sockaddr*)&m_locaddr, m_addrlen)) < 0)
+        if((m_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) >= 0) {
+            int enable = 1;
+            if (setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+                perror("setsockopt(SO_REUSEADDR) failed");
+            if ((::bind(m_sock, (struct sockaddr *) &m_locaddr, m_addrlen)) < 0)
                 m_sock = -1;
+        }
     }
 
     ~Udp()
