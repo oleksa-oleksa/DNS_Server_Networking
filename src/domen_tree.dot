@@ -1,5 +1,5 @@
 digraph  tree {
-    root -> telematik
+    root -> telematik [taillabel = "tail"]
     root -> fuberlin
     telematik -> switch;
     switch -> www;
