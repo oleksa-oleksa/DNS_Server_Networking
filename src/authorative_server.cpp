@@ -4,11 +4,30 @@
 #include <unistd.h>
 
 #include "udp.hpp"
+#include "dns_db.h"
 
-#define SERVER_IP 	"127.0.0.10"
+//#define SERVER_IP 	"127.0.0.10"
+#define MAXCHAR 100
 
 using namespace std;
 using namespace udp;
+
+bool read_config(const char *server_name) {
+    FILE *fp;
+    char str[MAXCHAR];
+    string filename = string("dns_db/") + server_name;
+
+    fp = fopen(filename.c_str(), "r");
+    if (fp == NULL){
+        printf("Could not open file %s", filename.c_str());
+        return 1;
+    }
+
+    while (fgets(str, MAXCHAR, fp) != NULL)
+        printf("%s", str);
+    fclose(fp);
+    return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -26,6 +45,8 @@ int main(int argc, char **argv)
 
     printf("Server started: %s: %s\n", server_ip, server_name);
 	string hello = "ACK";
+
+	read_config(server_name);
 
     Udp udp(server_ip, UDPPORT);
     string recvmsg;   // received message
