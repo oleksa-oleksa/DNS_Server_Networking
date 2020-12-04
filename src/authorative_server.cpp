@@ -2,13 +2,16 @@
 #include <string>
 #include <json-c/json.h>
 #include <unistd.h>
+#include <iostream>
 
-#include "udp.hpp"
-#include "dns_db.h"
-#include "authorative_server.h"
+#include "../include/udp.hpp"
+#include "../include/dns_db.hpp"
+#include "../include/authorative_server.hpp"
 
 //#define SERVER_IP 	"127.0.0.10"
 #define MAXCHAR 100
+#define AUTHORITATIVE       1
+#define NON_AUTHORITATIVE   0
 
 using namespace std;
 using namespace udp;
@@ -23,6 +26,7 @@ bool read_config(const char *server_name, DnsDb *db) {
         printf("Could not open file %s", filename.c_str());
         return 1;
     }
+
     char s1[20], s2[20];
     while (fgets(str, MAXCHAR, fp) != NULL) {
         //printf("%s", str);
@@ -40,8 +44,7 @@ bool read_config(const char *server_name, DnsDb *db) {
 
 
 
-bool parse_from_json(const char *json, DnsRequest *request)
-{
+bool parse_from_json(const char *json, DnsRequest *request) {
  // Creating a json object *//*
     json_object* parsed_json = json_tokener_parse(json);
 
@@ -69,9 +72,32 @@ bool parse_from_json(const char *json, DnsRequest *request)
 
 }
 
+void parse_msg(char *temp_buf, const char *name, const char *ip, const char *domain, int authoritative) {
+    /* Creating a json object */
+    json_object *jobj = json_object_new_object();
 
-int main(int argc, char **argv)
-{
+    json_object *dns_flags_response = json_object_new_int(1);
+    json_object *dns_flags_recdesired = json_object_new_int(0);
+    json_object *dns_qry_name = json_object_new_string(name);
+    json_object *dns_qry_type = json_object_new_int(1);
+    json_object *dns_a = json_object_new_string(ip);
+    json_object *dns_ns = json_object_new_string(domain);
+    json_object *dns_flags_authoritative = json_object_new_int(authoritative);
+
+    /* Form the json object as set of key-value pairs */
+    json_object_object_add(jobj, "dns.flags.response", dns_flags_response);
+    json_object_object_add(jobj, "dns.flags.recdesired", dns_flags_recdesired);
+    json_object_object_add(jobj, "dns.qry.name", dns_qry_name);
+    json_object_object_add(jobj, "dns.qry.type", dns_qry_type);
+    json_object_object_add(jobj, "dns.a", dns_a);
+    json_object_object_add(jobj, "dns.ns", dns_ns);
+    json_object_object_add(jobj, "dns.flags.authoritative", dns_flags_authoritative);
+
+    if (strcpy(temp_buf, json_object_to_json_string(jobj)) == 0)
+        perror("strcpy");
+}
+
+int main(int argc, char **argv) {
     char *server_ip;
     char *server_name;
     DnsDb db;
@@ -89,39 +115,44 @@ int main(int argc, char **argv)
     printf("Server started: %s: %s\n", server_ip, server_name);
 
 	read_config(server_name, &db);
-    // debug
-	// printf("%s\n", db.find_record("telematik")->ip.c_str());
 
     Udp udp(server_ip, UDPPORT);
     string recvmsg;   // received message
     string remaddr;   // remote address
 
-
-    while(1)
-   {
+    while(1) {
         udp.recv(recvmsg, remaddr);
-        printf("Server: Received message \"%s\" from %s\n", recvmsg.c_str(), remaddr.c_str());
+        puts("RECV");
+        char temp_buf[BUFSIZE];
         parse_from_json(recvmsg.c_str(), &request);
 
-       const DnsRecord *found = db.find_record(request.dns_qry_name);
-       if (found != NULL) {
-           if(found->ip.c_str() != NULL) {
-               printf("Client request: %s\n", recvmsg.c_str());
-               udp.send("FOUND!", remaddr);
-           }
-           else {
-               printf("Client request: %s\n", recvmsg.c_str());
-               udp.send("NO IP: REFUSED", remaddr);
-           }
-       }
-       else {
-           printf("Client request: %s\n", recvmsg.c_str());
-           udp.send("NO DNS RECORD: REFUSED!", remaddr);
-       }
+        const DnsRecord *found = db.find_record(db.get_relevant_record(request.dns_qry_name, server_name));
+        printf("NAME: %s IP: %s\n", found->domain.c_str(), found->ip.c_str());
 
-		// printf("Client : %s\n", recvmsg.c_str());
-        //udp.send(hello, remaddr);
-		//printf("Sent ACK.\n");
+        if (found != NULL) {
+            if(found->ip.c_str() != NULL && found->domain.c_str() != request.dns_qry_name) {
+                parse_msg(temp_buf, request.dns_qry_name.c_str(), found->ip.c_str(), found->domain.c_str(), NON_AUTHORITATIVE);
+                string sndstr = string(temp_buf);
+                udp.send(sndstr, remaddr);
+                puts("SEND");
+            }
+            // AUTHORITATIVE
+            else if(found->ip.c_str() != NULL && found->domain.c_str() == request.dns_qry_name) {
+                parse_msg(temp_buf, request.dns_qry_name.c_str(), found->ip.c_str(), found->domain.c_str(), AUTHORITATIVE);
+                string sndstr = string(temp_buf);
+                udp.send(sndstr, remaddr);
+                puts("SEND");
+            } else {
+                printf("Client request: %s\n", recvmsg.c_str());
+                udp.send("NO IP: REFUSED", remaddr);
+                puts("SEND");
+            }
+        }
+        else {
+            printf("Client request: %s\n", recvmsg.c_str());
+            udp.send("NO DNS RECORD: REFUSED!", remaddr);
+            puts("SEND");
+        }
 	}
 
 	return 0;

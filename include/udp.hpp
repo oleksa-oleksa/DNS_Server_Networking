@@ -9,7 +9,7 @@
 #define SOCKERR "Error: No socket - failed to create or bind\n"
 
 #include <unistd.h>
-#include <string>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
