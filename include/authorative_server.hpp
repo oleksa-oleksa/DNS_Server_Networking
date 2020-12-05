@@ -13,6 +13,8 @@ struct DnsRequest {
     int dns_flags_recdesired;
     string dns_qry_name;
     int dns_qry_type;
+    string dns_a;
+    int dns_flags_authoritative;
 };
 
 typedef struct DnsRequest DnsRequest;

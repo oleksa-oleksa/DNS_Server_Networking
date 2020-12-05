@@ -29,6 +29,7 @@ public:
     DnsDb(const DnsDb &other) : db(other.db) {}
 
     const DnsRecord *find_record(const string &name);
+    const string get_relevant_record(const string domain, const string server_name);
     bool add_record(const DnsRecord &record);
 };
 

@@ -4,12 +4,13 @@
 
 AUTH = server
 STUB = client
+RESO = resolver
 
 CXX = g++
 CXXFLAGS = -Wall -O2 -std=c++11
 LIBS = -ljson-c
 
-all: $(AUTH) $(STUB) $(DB)
+all: $(AUTH) $(STUB) $(DB) $(RESO)
 
 $(AUTH):
 	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/authorative_server.cpp $(LIBS) -o $@
@@ -20,5 +21,8 @@ $(DB):
 $(STUB):
 	$(CXX) $(CXXFLAGS) src/stub_resolver.cpp $(LIBS) -o $@
 
+$(RESO):
+	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/recursive_resolver.cpp $(LIBS) -o $@
+
 clean:
-	rm $(AUTH) $(STUB) $(DB)
+	rm $(AUTH) $(STUB) $(DB) $(RESO)
