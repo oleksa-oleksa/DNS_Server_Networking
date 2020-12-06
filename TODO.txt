@@ -1,0 +1,14 @@
+src/authns.cpp
+    - Sending delay und Logging
+    - Sonst fertig, ggf. zeigt sich was mit der Zeit
+
+src/recres.cpp
+    - Ist nur ein Skelett - der eigentliche Algorithmus des Rekursiven Resolvers muss noch implementiert werden
+
+src/stub.cpp
+    - Sending delay und Logging
+    - Sonst fertig (eigentlich müsste vllt noch überprüft werden, ob die erhaltene Response zur Query passt)
+
+src/dns_db.h
+    - Ablaufen der TTL und Löschen von Records (wahrscheinlich mit Hilfe einer timestamp-Membervariable)
+    - eine Funktion toFile() zum Schreiben von Cache-Dateien - bis jetzt nutzen wir nur Config-Dateien und halten die Database nur im Hauptspeicher
