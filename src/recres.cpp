@@ -8,7 +8,7 @@
 * Jannes Volkens
 * Michael Zent
 *
-* Telematik, Prof. M. Wählisch
+* Telematik, Prof. M. Waehlisch
 * WS 2020/21 FU Berlin
 */
 
@@ -18,6 +18,7 @@
 
 // name of the pre-configured local name server (recursive resolver)
 #define RECRESOLVER "dns.server.local"
+#define ROOT "ns."
 
 using namespace std;
 
@@ -48,9 +49,10 @@ int main(void)
     cout << "Recursive Resolver " << name << " started on " << ip << endl<<endl;
 
     DnsPacket dns;
-    DnsRecord* rec;
     string remaddr; // remote address
     string msg, query, response; // DNS message, query resp. response Json string
+    string rootNsIp = db.findIp(ROOT);
+    string stubIP;
 
     /*
     * DNS - Authoritative Name Server algorithm
@@ -61,21 +63,35 @@ int main(void)
         udp.recv(msg, remaddr);
         dns.fromJson(msg);
 
-        // a response was received (from Auth.NS)
-        if(dns.flags_response)
+        // a query was received (from Stub)
+        if (dns.flags_recdesired)
         {
+            stubIP = remaddr;
+            udp.send(msg, rootNsIp);
+        }
+        // No result found
+        else if (dns.flags_rcode == 10)
+        {
+            udp.send(msg, stubIP);
+        }
+        // a response was received
+         else if(dns.flags_response && !dns.flags_authoritative)
+        {
+            string ip = dns.a;
+            query = dns.query(dns.qry_name.substr(0, dns.qry_name.size() - 1), "A");
+            
+            udp.send(query, ip);
             /*
             * TODO: Evaluate whether the response carries a reference
             * to another NS or the authoritative name resolution.
             */
         }
-        // a query was received (from Stub)
-        else
+        // a response was received (from Auth.NS)
+        else if (dns.flags_response && dns.flags_authoritative)
         {
-            /*
-            * TODO: Start iterative querying of authoritative NSs
-            */
+            udp.send(msg, stubIP);
         }
+        
     }
 
     return 0;

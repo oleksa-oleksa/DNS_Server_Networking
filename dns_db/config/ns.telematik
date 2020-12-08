@@ -1,4 +1,4 @@
-ns.telematik 315360000 A 127.0.0.20
+ns.telematik. 315360000 A 127.0.0.20
 ns.switch.telematik. 315360000 A 127.0.0.21
 switch.telematik. 315360000 NS ns.switch.telematik.
 ns.router.telematik. 315360000 A 127.0.0.22

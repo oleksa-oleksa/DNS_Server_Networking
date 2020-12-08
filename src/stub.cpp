@@ -8,7 +8,7 @@
 * Jannes Volkens
 * Michael Zent
 *
-* Telematik, Prof. M. Wählisch
+* Telematik, Prof. M. Waehlisch
 * WS 2020/21 FU Berlin
 */
 
@@ -51,9 +51,9 @@ int main(int argc, char** argv)
     }
 
     // look up address of pre-configured name server
-//    string localNsIp = db.findIp(RECRESOLVER);
-    string localNsIp = "127.0.0.21"; // for development only, for production see a line above !
-//    string localNsIp = "127.0.0.1"; // root NS, for development only, for production see a line above !
+    string localNsIp = db.findIp(RECRESOLVER);
+    // string localNsIp = "127.0.0.21"; // for development only, for production see a line above !
+    // string localNsIp = "127.0.0.1"; // root NS, for development only, for production see a line above !
     if(localNsIp == "")
     {
         cout << "Error: No address entry for pre-configured DNS name server!" << endl;

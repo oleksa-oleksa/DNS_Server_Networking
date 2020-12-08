@@ -8,7 +8,7 @@
 * Jannes Volkens
 * Michael Zent
 *
-* Telematik, Prof. M. Wählisch
+* Telematik, Prof. M. Waehlisch
 * WS 2020/21 FU Berlin
 */
 
@@ -71,8 +71,9 @@ int main(int argc, char** argv)
             cout << "AUTH.NS received query from " << remaddr << ":\n" << query << endl;
 
             // try to answer from cache first
-            ip = db.findIp(dns.qry_name);
-            if(ip == "") // no record
+            rec = db.find(dns.qry_name);
+
+            if(rec == NULL) // no record
             {
                 /*
                 * Read the domain suffixes and try to find a corresponding NS in the database
@@ -80,8 +81,10 @@ int main(int argc, char** argv)
                 uint16_t j = 0;
                 for(uint16_t i = dns.qry_name.size()-2; i > 0 && i < dns.qry_name.size(); i = j-1)
                 {
-                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos)
+                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos){
+                        ip = "";
                         break;
+                    }
 
                     domain = dns.qry_name.substr(j+1);
                     rec = db.find(domain);
@@ -138,7 +141,16 @@ int main(int argc, char** argv)
                 dns.resp_name = dns.qry_name;
                 dns.resp_type = 1;
                 dns.resp_ttl = 300;
-                dns.a = ip;
+
+                if(rec && rec->type == "NS") {
+                    // get IP address of this NS
+                    rec = db.find(rec->value);
+                    if(rec) {
+                        dns.a = rec->value; // NS address
+                    }
+                } else {
+                    dns.a = rec->value;
+                }
             }
 
             response = dns.toJson();
