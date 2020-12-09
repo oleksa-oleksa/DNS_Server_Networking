@@ -15,11 +15,21 @@
 #include "dns_packet.h"
 #include "dns_db.h"
 #include "udp.h"
+#include <fstream> // for outputing log files
+#include <iostream>
+#include <ctime> // for delay
+#include <chrono>
+#include <thread>
+#include <cstdlib> //for random number
 
 using namespace std;
+using namespace std::this_thread; // sleep_for
+using namespace std::chrono; // milliseconds
 
 /*
 */
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -46,6 +56,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
+
+    string my_ip = ip; // ip of this server, to be logged
+
     // start UDP server
     Udp udp(ip, UDPPORT);
     cout << "Authoritative NS " << name << " started on " << ip << endl<<endl;
@@ -55,6 +68,16 @@ int main(int argc, char** argv)
     string remaddr; // remote address
     string domain; // domain name
     string query, response;   // DNS query resp. response Json string
+
+
+    // create log file for this server
+    ofstream logFile;
+    logFile.open("./log/" + name + "log");
+
+
+    // vars used in log outputs
+    int num_of_requests_received = 0;
+    int num_of_responses_sent = 0;
 
     /*
     * DNS - Authoritative Name Server algorithm
@@ -69,6 +92,11 @@ int main(int argc, char** argv)
         if(!dns.flags_response)
         {
             cout << "AUTH.NS received query from " << remaddr << ":\n" << query << endl;
+
+	    // log output and increment num
+	    num_of_requests_received++;
+	    time_t now = time(0); // get current time
+            logFile << now << " | " << my_ip << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
 
             // try to answer from cache first
             rec = db.find(dns.qry_name);
@@ -154,11 +182,20 @@ int main(int argc, char** argv)
             }
 
             response = dns.toJson();
+
+	    sleep_for(milliseconds(rand() % 400 + 100)); //delay random 100ms to 500ms
+
             udp.send(response, remaddr);
+
+	    num_of_responses_sent++;
+
+	    now = time(0); // get current time
+            logFile << now << " | " << my_ip << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
+
             dns.clear(); // clear dns packet before next query
             cout << "AUTH.NS sent response to " << remaddr << ":\n" << response << endl;
         }
     }
-
+    logFile.close();
     return 0;
 }
