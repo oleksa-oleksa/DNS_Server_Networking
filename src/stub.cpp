@@ -86,14 +86,15 @@ int main(int argc, char** argv)
             // send query to the pre-configured local NS (recursive resolver)
             query = dns.query(name, "A");
             udp.send(query, localNsIp);
-            cout << "STUB sent a query to " << localNsIp << ":\n" << query << endl;
+            // cout << "STUB sent a query to " << localNsIp << ":\n" << query << endl;
+            cout << "STUB sent a query to " << localNsIp << "\n";
 
             // receive the response
             /*
             * TODO: Check whether this is indeed an answer to the query
             */
             udp.recv(response, remaddr);
-            cout << "STUB received a response from " << remaddr << ":\n" << response;
+            // cout << "STUB received a response from " << remaddr << ":\n" << response;
             dns.fromJson(response);
 
             // write the info into a new or refreshed record in database
