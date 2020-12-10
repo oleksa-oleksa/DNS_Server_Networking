@@ -15,11 +15,21 @@
 #include "dns_packet.h"
 #include "dns_db.h"
 #include "udp.h"
+#include <fstream> // for outputing log files
+#include <iostream>
+#include <ctime> // for delay
+#include <chrono>
+#include <thread>
+#include <cstdlib> //for random number
+
 
 // name of the pre-configured local name server (recursive resolver)
 #define RECRESOLVER "dns.server.local"
 
 using namespace std;
+using namespace std::this_thread; // sleep_for
+using namespace std::chrono; // milliseconds
+
 //using namespace udp;
 
 /*
@@ -69,6 +79,19 @@ int main(int argc, char** argv)
     string remaddr; // remote address
     string query, response;   // DNS query Json string
 
+    // create log file for stub
+    ofstream logFile;
+    logFile.open("./log/stub/" + name + "log");
+ 
+    // create debug file for stub
+    ofstream debugFile;
+    debugFile.open("./debug/stub/" + name + "txt");
+
+    // vars used in log outputs
+    int num_of_requests_sent = 0;
+    int num_of_responses_received = 0;
+
+
     /*
     * DNS - Stub Resolver algorithm
     */
@@ -85,15 +108,28 @@ int main(int argc, char** argv)
         {
             // send query to the pre-configured local NS (recursive resolver)
             query = dns.query(name, "A");
+            sleep_for(milliseconds(rand() % 100 + 100)); //delay random 100ms to 200ms
             udp.send(query, localNsIp);
             // cout << "STUB sent a query to " << localNsIp << ":\n" << query << endl;
             cout << "STUB sent a query to " << localNsIp << "\n";
+
+            // log output and increment num
+            num_of_requests_sent++;
+            time_t now = time(0); // get current time
+            logFile << now << " | " << localNsIp << " | " << num_of_requests_sent  << " | " << "0" << " | " << "0"  << " | " << num_of_responses_received << endl;
+	    debugFile << "sent to" << localNsIp << ":" << query << endl;
 
             // receive the response
             /*
             * TODO: Check whether this is indeed an answer to the query
             */
             udp.recv(response, remaddr);
+
+            num_of_responses_received++;
+            now = time(0); // get current time
+            logFile << now << " | " << remaddr << " | " << num_of_requests_sent  << " | " << "0" << " | " << "0"  << " | " << num_of_responses_received << endl;
+	    debugFile << "received from " << remaddr << ":" << response << endl;
+
             // cout << "STUB received a response from " << remaddr << ":\n" << response;
             dns.fromJson(response);
 

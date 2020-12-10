@@ -72,8 +72,11 @@ int main(int argc, char** argv)
 
     // create log file for this server
     ofstream logFile;
-    logFile.open("./log/" + name + "log");
+    logFile.open("./log/authNS/" + name + "log");
 
+    // create debug file for this server
+    ofstream debugFile;
+    debugFile.open("./debug/authNS/" + name + "txt");
 
     // vars used in log outputs
     int num_of_requests_received = 0;
@@ -96,8 +99,8 @@ int main(int argc, char** argv)
 	    // log output and increment num
 	    num_of_requests_received++;
 	    time_t now = time(0); // get current time
-            logFile << now << " | " << my_ip << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
-
+            logFile << now << " | " << remaddr << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
+	    debugFile << "received from " << remaddr << ":" << query << endl;
             // try to answer from cache first
             rec = db.find(dns.qry_name);
 
@@ -183,14 +186,15 @@ int main(int argc, char** argv)
 
             response = dns.toJson();
 
-	    sleep_for(milliseconds(rand() % 400 + 100)); //delay random 100ms to 500ms
+	    sleep_for(milliseconds(rand() % 100 + 100)); //delay random 100ms to 200ms
 
             udp.send(response, remaddr);
 
 	    num_of_responses_sent++;
 
 	    now = time(0); // get current time
-            logFile << now << " | " << my_ip << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
+            logFile << now << " | " << remaddr << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
+	    debugFile << "sent to " << remaddr << ":" << response << endl;
 
             dns.clear(); // clear dns packet before next query
             cout << "AUTH.NS sent response to " << remaddr << ":\n" << response << endl;

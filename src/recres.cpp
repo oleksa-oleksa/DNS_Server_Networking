@@ -1,7 +1,6 @@
 /*
 * recres.cpp
-*
-* Recursive Resolver
+** Recursive Resolver
 *
 * Oleksandra Baga
 * Milos Budimir
@@ -53,7 +52,6 @@ int main(void)
     string msg, query, response; // DNS message, query resp. response Json string
     string rootNsIp = db.findIp(ROOT);
     string stubIP;
-
     /*
     * DNS - Authoritative Name Server algorithm
     */
@@ -79,7 +77,7 @@ int main(void)
         {
             string ip = dns.a;
             query = dns.query(dns.qry_name.substr(0, dns.qry_name.size() - 1), "A");
-            
+
             udp.send(query, ip);
             /*
             * TODO: Evaluate whether the response carries a reference
@@ -91,7 +89,6 @@ int main(void)
         {
             udp.send(msg, stubIP);
         }
-        
     }
 
     return 0;
