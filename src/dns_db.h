@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fstream>
 
 using namespace std;
 
@@ -134,6 +135,24 @@ public:
 
         fclose(fp);
         return 0;
+    }
+
+
+    /*
+    * Output db to a file.
+    */
+    void toFile() {
+	ofstream outputFile;
+	outputFile.open("./dbOut.txt");
+	for(auto it = db.begin(); it != db.end(); ++it)
+        {
+            DnsRecord* r = it->get();
+            outputFile << r->label << " ";
+	    outputFile << r->ttl << " ";
+	    outputFile << r->type << " ";
+            outputFile << r->value << endl;
+        }
+	outputFile.close();
     }
 };
 

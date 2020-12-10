@@ -201,5 +201,6 @@ int main(int argc, char** argv)
         }
     }
     logFile.close();
+    debugFile.close();
     return 0;
 }

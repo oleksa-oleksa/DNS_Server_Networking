@@ -151,6 +151,7 @@ int main(int argc, char** argv)
         else
             cout << "Host " << dns.resp_name << " has the IP address " << ip << ".\n\n";
     }
-
+    logFile.close();
+    debugFile.close();
     return 0;
 }
