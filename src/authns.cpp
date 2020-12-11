@@ -24,11 +24,12 @@
 
 using namespace std;
 using namespace std::this_thread; // sleep_for
-using namespace std::chrono; // milliseconds
+using namespace std::chrono; // seconds
 
 /*
 */
 
+void funkcija(){}
 
 int main(int argc, char** argv)
 {
@@ -81,6 +82,15 @@ int main(int argc, char** argv)
     // vars used in log outputs
     int num_of_requests_received = 0;
     int num_of_responses_sent = 0;
+
+    // start a thread which calls function to decrease ttl in cache every second
+    std::thread ticking_thread([&db] () {
+       for(;;) {
+         sleep_for(seconds(1));
+         db.tick_and_check_ttl();
+       }
+     });
+
 
     /*
     * DNS - Authoritative Name Server algorithm
@@ -171,7 +181,7 @@ int main(int argc, char** argv)
                 dns.flags_authoritative = 1;
                 dns.resp_name = dns.qry_name;
                 dns.resp_type = 1;
-                dns.resp_ttl = 300;
+                dns.resp_ttl = 6;
 
                 if(rec && rec->type == "NS") {
                     // get IP address of this NS

@@ -14,7 +14,7 @@ STUB = stub
 
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wno-deprecated -O2
-LIBS = -ljsoncpp
+LIBS = -ljsoncpp -pthread
 
 all: $(AUTH) $(RRES) $(STUB)
 
