@@ -28,7 +28,7 @@
 
 using namespace std;
 using namespace std::this_thread; // sleep_for
-using namespace std::chrono; // seconds
+using namespace std::chrono; // milliseconds
 
 //using namespace udp;
 
@@ -90,14 +90,6 @@ int main(int argc, char** argv)
     // vars used in log outputs
     int num_of_requests_sent = 0;
     int num_of_responses_received = 0;
-
-    // start a thread which calls function to decrease ttl in cache every second
-    std::thread ticking_thread([&db] () {
-       for(;;) {
-          sleep_for(seconds(1));
-          db.tick_and_check_ttl();
-       }
-    });
 
 
     /*

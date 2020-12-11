@@ -20,8 +20,6 @@
 #include <vector>
 #include <memory>
 #include <fstream>
-#include <mutex>
-
 
 using namespace std;
 
@@ -37,7 +35,6 @@ typedef struct DnsRecord DnsRecord;
 
 /*
 */
-
 class DnsDb
 {
 private:
@@ -45,7 +42,7 @@ private:
     vector<PDnsRecord> db;
 
 public:
-    DnsDb() : db() {}
+    DnsDb() : db() {};
     DnsDb(const DnsDb &other) : db(other.db) {}
 
     /*
@@ -124,6 +121,7 @@ public:
             cout << "Could not open file " << path << endl;
             return 1;
         }
+
         while(fgets(str, 512, fp) != NULL)
         {
             sscanf(str, "%s %s %s %s", label, ttl, type, value);
@@ -156,26 +154,6 @@ public:
         }
 	outputFile.close();
     }
-
-    /*
-    * Decrease ttl by 1 for each record, and remove if necessarry
-    */
-    std::mutex _mutex;
-
-    void tick_and_check_ttl() {
-
-         for(auto it = db.begin(); it != db.end(); ++it) {
-            DnsRecord* r = it -> get();
-            r->ttl--; // decrease ttl for every record every second
-            if (r->ttl == 0) { // check if ttl == 0, if yes -> delete record
-                 std::unique_lock<std::mutex> lock(_mutex);
-                 db.erase(it);
-		 break;
-            }
-         }
-
-    }
-
 };
 
 #endif // _DNS_DB_H
