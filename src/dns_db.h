@@ -20,6 +20,7 @@
 #include <vector>
 #include <memory>
 #include <fstream>
+#include <ctime>
 
 using namespace std;
 
@@ -40,9 +41,10 @@ class DnsDb
 private:
     typedef shared_ptr<DnsRecord> PDnsRecord;
     vector<PDnsRecord> db;
+    time_t timestamp;
 
 public:
-    DnsDb() : db() {};
+    DnsDb() : db() {timestamp = time(NULL);};
     DnsDb(const DnsDb &other) : db(other.db) {}
 
     /*
@@ -50,6 +52,20 @@ public:
     */
     DnsRecord* find(const string& label)
     {
+
+	time_t now = time(NULL);
+        time_t diff = now - this->timestamp;
+	this->timestamp = now;
+
+        for (auto it = db.begin(); it != db.end(); it++) {
+	    DnsRecord* r = it->get();
+            if (r->ttl <= diff) {
+                 db.erase(it--);
+            } else {
+		r->ttl-=diff;
+              }
+	}
+
         for(auto it = db.begin(); it != db.end(); ++it)
         {
             DnsRecord* r = it->get();

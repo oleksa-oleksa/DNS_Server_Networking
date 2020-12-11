@@ -171,7 +171,7 @@ int main(int argc, char** argv)
                 dns.flags_authoritative = 1;
                 dns.resp_name = dns.qry_name;
                 dns.resp_type = 1;
-                dns.resp_ttl = 300;
+                dns.resp_ttl = 10;
 
                 if(rec && rec->type == "NS") {
                     // get IP address of this NS
