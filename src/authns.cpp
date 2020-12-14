@@ -12,9 +12,6 @@
 * WS 2020/21 FU Berlin
 */
 
-#include "dns_packet.h"
-#include "dns_db.h"
-#include "udp.h"
 #include <fstream> // for outputing log files
 #include <iostream>
 #include <ctime> // for delay
@@ -22,14 +19,16 @@
 #include <thread>
 #include <cstdlib> //for random number
 
+#include "dns_packet.h"
+#include "dns_db.h"
+#include "udp.h"
+
 using namespace std;
 using namespace std::this_thread; // sleep_for
 using namespace std::chrono; // milliseconds
 
 /*
 */
-
-
 int main(int argc, char** argv)
 {
     /*
@@ -56,7 +55,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-
     string my_ip = ip; // ip of this server, to be logged
 
     // start UDP server
@@ -69,13 +67,9 @@ int main(int argc, char** argv)
     string domain; // domain name
     string query, response;   // DNS query resp. response Json string
 
-
-    // create log file for this server
-    ofstream logFile;
+    // create log and debug files for this server
+    ofstream logFile, debugFile;
     logFile.open("./log/authNS/" + name + "log");
-
-    // create debug file for this server
-    ofstream debugFile;
     debugFile.open("./debug/authNS/" + name + "txt");
 
     // vars used in log outputs
@@ -94,13 +88,13 @@ int main(int argc, char** argv)
         // a query was received indeed
         if(!dns.flags_response)
         {
-            cout << "AUTH.NS received query from " << remaddr << ":\n" << query << endl;
+//            cout << "AUTH.NS received query from " << remaddr << ":\n" << query << endl;
 
-	    // log output and increment num
-	    num_of_requests_received++;
-	    time_t now = time(0); // get current time
+            // log output and increment num
+            num_of_requests_received++;
+            time_t now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
-	    debugFile << "received from " << remaddr << ":" << query << endl;
+            debugFile << "Received from " << remaddr << ":" << query << endl;
             // try to answer from cache first
             rec = db.find(dns.qry_name);
 
@@ -112,7 +106,8 @@ int main(int argc, char** argv)
                 uint16_t j = 0;
                 for(uint16_t i = dns.qry_name.size()-2; i > 0 && i < dns.qry_name.size(); i = j-1)
                 {
-                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos){
+                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos)
+                    {
                         ip = "";
                         break;
                     }
@@ -151,12 +146,12 @@ int main(int argc, char** argv)
                     // the NS record is part of the authoritative section
                     dns.count_auth_rr = 1;
                     dns.resp_name = domain; // domain name
-                    dns.resp_ttl_ns = 86400;
+                    dns.resp_ttl_ns = 300;
                     dns.resp_type = 2; // NS
                     dns.ns = rec->label; // NS name
                     // the corresponding A record is part of the additional section
                     dns.count_add_rr = 1;
-                    dns.resp_ttl_a = 300;
+                    dns.resp_ttl_a = 10;
                     dns.a = ip;
                 }
             }
@@ -173,33 +168,29 @@ int main(int argc, char** argv)
                 dns.resp_type = 1;
                 dns.resp_ttl = 10;
 
-                if(rec && rec->type == "NS") {
-                    // get IP address of this NS
+                // the NS responsible for this domain was asked for
+                if(rec->type == "NS")
                     rec = db.find(rec->value);
-                    if(rec) {
-                        dns.a = rec->value; // NS address
-                    }
-                } else {
-                    dns.a = rec->value;
-                }
+
+                dns.a = rec->value;
             }
 
             response = dns.toJson();
 
-	    sleep_for(milliseconds(rand() % 100 + 100)); //delay random 100ms to 200ms
-
+            sleep_for(milliseconds(rand() % 100 + 100)); //delay random 100ms to 200ms
             udp.send(response, remaddr);
 
-	    num_of_responses_sent++;
+            num_of_responses_sent++;
 
-	    now = time(0); // get current time
+            now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << "0" << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << "0" << endl;
-	    debugFile << "sent to " << remaddr << ":" << response << endl;
+            debugFile << "sent to " << remaddr << ":" << response << endl;
 
             dns.clear(); // clear dns packet before next query
-            cout << "AUTH.NS sent response to " << remaddr << ":\n" << response << endl;
+//            cout << "AUTH.NS sent response to " << remaddr << ":\n" << response << endl;
         }
     }
+
     logFile.close();
     debugFile.close();
     return 0;
