@@ -1,0 +1,2 @@
+killall recres
+killall authns
