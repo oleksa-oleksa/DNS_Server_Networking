@@ -12,9 +12,6 @@
 * WS 2020/21 FU Berlin
 */
 
-#include "dns_packet.h"
-#include "dns_db.h"
-#include "udp.h"
 #include <fstream> // for outputing log files
 #include <iostream>
 #include <ctime> // for delay
@@ -22,6 +19,9 @@
 #include <thread>
 #include <cstdlib> //for random number
 
+#include "dns_packet.h"
+#include "dns_db.h"
+#include "udp.h"
 
 // name of the pre-configured local name server (recursive resolver)
 #define RECRESOLVER "dns.server.local"
@@ -29,8 +29,6 @@
 using namespace std;
 using namespace std::this_thread; // sleep_for
 using namespace std::chrono; // milliseconds
-
-//using namespace udp;
 
 /*
 */
@@ -62,8 +60,6 @@ int main(int argc, char** argv)
 
     // look up address of pre-configured name server
     string localNsIp = db.findIp(RECRESOLVER);
-    // string localNsIp = "127.0.0.21"; // for development only, for production see a line above !
-    // string localNsIp = "127.0.0.1"; // root NS, for development only, for production see a line above !
     if(localNsIp == "")
     {
         cout << "Error: No address entry for pre-configured DNS name server!" << endl;
@@ -79,18 +75,14 @@ int main(int argc, char** argv)
     string remaddr; // remote address
     string query, response;   // DNS query Json string
 
-    // create log file for stub
-    ofstream logFile;
+    // create log and debug file for stub
+    ofstream logFile, debugFile;
     logFile.open("./log/stub/" + name + "log");
- 
-    // create debug file for stub
-    ofstream debugFile;
     debugFile.open("./debug/stub/" + name + "txt");
 
     // vars used in log outputs
     int num_of_requests_sent = 0;
     int num_of_responses_received = 0;
-
 
     /*
     * DNS - Stub Resolver algorithm
@@ -99,6 +91,8 @@ int main(int argc, char** argv)
     {
         cout << "Enter a host's name to query its IP: ";
         cin >> name;
+
+        auto start = high_resolution_clock::now();
 
         // try to answer from cache first
         ip = db.findIp(name + ".");
@@ -109,28 +103,25 @@ int main(int argc, char** argv)
             // send query to the pre-configured local NS (recursive resolver)
             query = dns.query(name, "A");
             sleep_for(milliseconds(rand() % 100 + 100)); //delay random 100ms to 200ms
+
             udp.send(query, localNsIp);
-            // cout << "STUB sent a query to " << localNsIp << ":\n" << query << endl;
-            cout << "STUB sent a query to " << localNsIp << "\n";
+//            cout << "Sent a query to " << localNsIp << "\n";
 
             // log output and increment num
             num_of_requests_sent++;
             time_t now = time(0); // get current time
             logFile << now << " | " << localNsIp << " | " << num_of_requests_sent  << " | " << "0" << " | " << "0"  << " | " << num_of_responses_received << endl;
-	    debugFile << "sent to" << localNsIp << ":" << query << endl;
+            debugFile << "Sent to " << localNsIp << ": " << query << endl;
 
             // receive the response
-            /*
-            * TODO: Check whether this is indeed an answer to the query
-            */
             udp.recv(response, remaddr);
 
             num_of_responses_received++;
             now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << num_of_requests_sent  << " | " << "0" << " | " << "0"  << " | " << num_of_responses_received << endl;
-	    debugFile << "received from " << remaddr << ":" << response << endl;
+            debugFile << "Received from " << remaddr << ": " << response << endl;
 
-            // cout << "STUB received a response from " << remaddr << ":\n" << response;
+//            cout << "Received a response from " << remaddr << endl;
             dns.fromJson(response);
 
             // write the info into a new or refreshed record in database
@@ -150,7 +141,11 @@ int main(int argc, char** argv)
             cout << "Error: This host couldn't be found!" << endl<<endl;
         else
             cout << "Host " << dns.resp_name << " has the IP address " << ip << ".\n\n";
+
+        auto end = high_resolution_clock::now();
+        cout << "Needed " << duration_cast<milliseconds>(end - start).count() << "ms to answer." << endl<<endl;
     }
+
     logFile.close();
     debugFile.close();
     return 0;
