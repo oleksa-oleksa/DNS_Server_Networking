@@ -1,6 +1,6 @@
 /*
 * recres.cpp
-** Recursive Resolver
+* Recursive Resolver
 *
 * Oleksandra Baga
 * Milos Budimir
@@ -41,6 +41,7 @@ int main(void)
     string name = RECRESOLVER;
 
     DnsDb db;
+    db.fromFile("dns_db/cache/" + name);
     db.fromFile("dns_db/config/" + name); // read out corresponding config file
     name += "."; // add dot to create fully qualified domain name (FQDN)
 
@@ -90,8 +91,8 @@ int main(void)
             ++num_of_responses_received;
             now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << num_of_requests_sent << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << num_of_responses_received << endl;
-            debugFile << "Received from " << remaddr << ": " << msg << endl;
-cout << "Received from " << remaddr << ": " << msg << endl;
+            debugFile << "Received from " << remaddr << ":\n" << msg << endl;
+cout << "Received from " << remaddr << ":\n" << msg << endl;
 
             // No result found
             if(dns.flags_rcode == 10)
@@ -102,8 +103,8 @@ cout << "Received from " << remaddr << ": " << msg << endl;
                 ++num_of_responses_sent;
                 now = time(0); // get current time
                 logFile << now << " | " << stubIP << " | " << num_of_requests_sent << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << num_of_responses_received << endl;
-                debugFile << "Sent to " << stubIP << ": " << msg << endl;
-cout << "Sent to " << stubIP << ": " << msg << endl;
+                debugFile << "Sent to " << stubIP << ":\n" << msg << endl;
+cout << "Sent to " << stubIP << ":\n" << msg << endl;
             }
             // an authoritative answer was received (from Auth.NS)
             else if(dns.flags_authoritative && dns.count_answers)
@@ -111,7 +112,7 @@ cout << "Sent to " << stubIP << ": " << msg << endl;
                 // write the info into a new or refreshed record in database
                 rec.label = dns.resp_name;
                 rec.ttl = dns.resp_ttl;
-                rec.type = dns.resp_type;
+                rec.type = "A";
                 rec.value = dns.a;
                 db.write(rec);
 
@@ -121,29 +122,26 @@ cout << "Sent to " << stubIP << ": " << msg << endl;
                 ++num_of_responses_sent;
                 now = time(0); // get current time
                 logFile << now << " | " << stubIP << " | " << num_of_requests_sent << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << num_of_responses_received << endl;
-                debugFile << "Sent to " << stubIP << ": " << msg << endl;
-cout << "Sent to " << stubIP << ": " << msg << endl;
+                debugFile << "Sent to " << stubIP << ":\n" << msg << endl;
+cout << "Sent to " << stubIP << ":\n" << msg << endl;
             }
             // reference to another NS was received (from Auth.NS)
             else if(dns.count_auth_rr && dns.resp_type == 2)
             {
-cout << "AUTHNSREF" << endl;
-
                 // cache NS entry
                 rec.label = dns.resp_name; // domain
                 rec.ttl = dns.resp_ttl_ns;
-                rec.type = dns.resp_type;
+                rec.type = "NS";
                 rec.value = dns.ns;
                 db.write(rec);
-cout << "NEWNSREC" << endl;
 
                 // cache corresponding A entry
                 rec.label = dns.ns;
                 rec.ttl = dns.resp_ttl_a;
-                rec.type = 1;
+                rec.type = "A";
                 rec.value = dns.a;
                 db.write(rec);
-cout << "NEWAREC" << endl;
+db.toFile("dumpdb.txt");
 
                 // query that NS
                 ip = dns.a;
@@ -155,8 +153,8 @@ cout << "NEWAREC" << endl;
                 num_of_requests_sent++;
                 time_t now = time(0); // get current time
                 logFile << now << " | " << ip << " | " << num_of_requests_sent  << " | " << "0" << " | " << "0"  << " | " << num_of_responses_received << endl;
-                debugFile << "Sent to " << ip << ": " << query << endl;
-cout << "Sent to " << ip << ": " << query << endl;
+                debugFile << "Sent to " << ip << ":\n" << query << endl;
+cout << "Sent to " << ip << ":\n" << query << endl;
             }
         }
         else // query from stub resolver
@@ -166,8 +164,8 @@ cout << "Sent to " << ip << ": " << query << endl;
             ++num_of_requests_received;
             now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << num_of_requests_sent << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << num_of_responses_received << endl;
-            debugFile << "Received from " << remaddr << ": " << msg << endl;
-cout << "Received from " << remaddr << ": " << msg << endl;
+            debugFile << "Received from " << remaddr << ":\n" << msg << endl;
+cout << "Received from " << remaddr << ":\n" << msg << endl;
 
             // try to answer from cache first
             ip = db.findIp(dns.qry_name + ".");
@@ -179,20 +177,25 @@ cout << "Received from " << remaddr << ": " << msg << endl;
                 * Read the domain suffixes and try to find a corresponding NS in the database
                 */
                 uint16_t j = 0;
-                for(uint16_t i = dns.qry_name.size()-2; i > 0 && i < dns.qry_name.size(); i = j-1)
+//                for(uint16_t i = dns.qry_name.size()-2; i > 0 && i < dns.qry_name.size(); i = j-1)
+                for(uint16_t i = 0; i >= 0; i = j+1)
                 {
-                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos)
+cout << "AAA: " << dns.qry_name.find('.', i) << endl;
+//                    if((j = dns.qry_name.rfind('.', i)) == (uint16_t)string::npos)
+                    if((j = dns.qry_name.find('.', i)) == (uint16_t)string::npos)
                     {
                         ip = "";
                         break;
                     }
 
                     string domain = dns.qry_name.substr(j+1);
+cout << "BBB: " << domain << endl;
+
                     DnsRecord* r = db.find(domain);
                     if(r && r->type == "NS")
                     {
                         // get IP address of this NS
-                        r = db.find(rec.value);
+                        r = db.find(r->value);
                         if(r)
                         {
                             ip = r->value; // NS address
@@ -237,10 +240,13 @@ cout << "Received from " << remaddr << ": " << msg << endl;
 
             now = time(0); // get current time
             logFile << now << " | " << remaddr << " | " << num_of_requests_sent << " | " << num_of_requests_received << " | " << num_of_responses_sent << " | " << num_of_responses_received << endl;
-            debugFile << "Sent to " << remaddr << ": " << msg << endl;
-cout << "Sent to " << remaddr << ": " << msg << endl;
+            debugFile << "Sent to " << remaddr << ":\n" << msg << endl;
+cout << "Sent to " << remaddr << ":\n" << msg << endl;
         }
     }
 
+    logFile.close();
+    debugFile.close();
+//    db.toFile("dns_db/cache/" + name.substr(0, name.size()-1));
     return 0;
 }
