@@ -47,6 +47,7 @@ int main(int argc, char** argv)
     string name(argv[1]); // read own host name from command line
 
     DnsDb db;
+    db.fromFile("dns_db/cache/" + name);
     db.fromFile("dns_db/config/" + name); // read out corresponding config file
     name += "."; // add dot to create fully qualified domain name (FQDN)
 
@@ -148,5 +149,6 @@ int main(int argc, char** argv)
 
     logFile.close();
     debugFile.close();
+    db.toFile("dns_db/cache/" + name.substr(0, name.size()-1));
     return 0;
 }
