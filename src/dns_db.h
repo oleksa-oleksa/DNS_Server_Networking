@@ -52,19 +52,20 @@ public:
     */
     DnsRecord* find(const string& label)
     {
-
-	time_t now = time(NULL);
+        /*
+        * Update TTLs, remove outdated records
+        */
+        time_t now = time(NULL);
         time_t diff = now - this->timestamp;
-	this->timestamp = now;
-
-        for (auto it = db.begin(); it != db.end(); it++) {
-	    DnsRecord* r = it->get();
-            if (r->ttl <= diff) {
-                 db.erase(it--);
-            } else {
-		r->ttl-=diff;
-              }
-	}
+        this->timestamp = now;
+        for(auto it = db.begin(); it != db.end(); it++)
+        {
+            DnsRecord* r = it->get();
+            if(r->ttl <= diff)
+                db.erase(it--);
+            else
+                r->ttl -= diff;
+        }
 
         for(auto it = db.begin(); it != db.end(); ++it)
         {
@@ -157,18 +158,20 @@ public:
     /*
     * Output db to a file.
     */
-    void toFile() {
-	ofstream outputFile;
-	outputFile.open("./dbOut.txt");
-	for(auto it = db.begin(); it != db.end(); ++it)
+    void toFile(string path)
+    {
+        ofstream outputFile;
+        outputFile.open(path);
+        for(auto it = db.begin(); it != db.end(); ++it)
         {
             DnsRecord* r = it->get();
             outputFile << r->label << " ";
-	    outputFile << r->ttl << " ";
-	    outputFile << r->type << " ";
+            outputFile << r->ttl << " ";
+            outputFile << r->type << " ";
             outputFile << r->value << endl;
         }
-	outputFile.close();
+
+        outputFile.close();
     }
 };
 
