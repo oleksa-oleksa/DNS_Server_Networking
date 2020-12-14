@@ -44,6 +44,7 @@ int main(int argc, char** argv)
     string name(argv[1]); // read own host name from command line
 
     DnsDb db;
+    db.fromFile("dns_db/cache/" + name);
     db.fromFile("dns_db/config/" + name); // read out corresponding config file
     name += "."; // add dot to create fully qualified domain name (FQDN)
 
@@ -151,7 +152,7 @@ int main(int argc, char** argv)
                     dns.ns = rec->label; // NS name
                     // the corresponding A record is part of the additional section
                     dns.count_add_rr = 1;
-                    dns.resp_ttl_a = 10;
+                    dns.resp_ttl_a = 120;
                     dns.a = ip;
                 }
             }
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
                 dns.flags_authoritative = 1;
                 dns.resp_name = dns.qry_name;
                 dns.resp_type = 1;
-                dns.resp_ttl = 10;
+                dns.resp_ttl = 120;
 
                 // the NS responsible for this domain was asked for
                 if(rec->type == "NS")
@@ -193,5 +194,6 @@ int main(int argc, char** argv)
 
     logFile.close();
     debugFile.close();
+    db.toFile("dns_db/cache/" + name.substr(0, name.size()-1));
     return 0;
 }
