@@ -1,5 +1,5 @@
 ns.fuberlin. 315360000 A 127.0.0.30
 ns.homework.fuberlin. 315360000 A 127.0.0.31
-homework.telematik. 315360000 NS ns.homework.fuberlin.
+homework.fuberlin. 315360000 NS ns.homework.fuberlin.
 ns.pcpools.fuberlin. 315360000 A 127.0.0.32
-pcpools.telematik. 315360000 NS ns.pcpools.fuberlin.
+pcpools.fuberlin. 315360000 NS ns.pcpools.fuberlin.
