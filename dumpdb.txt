@@ -1,0 +1,7 @@
+dns.server.local. 315359980 A 127.0.0.10
+ns. 315359980 A 127.0.0.1
+. 315359980 NS ns.
+fuberlin. 295 NS ns.fuberlin.
+ns.fuberlin. 115 A 127.0.0.30
+homework.fuberlin. 300 NS ns.homework.fuberlin.
+ns.homework.fuberlin. 120 A 127.0.0.31
