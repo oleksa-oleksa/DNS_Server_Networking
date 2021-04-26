@@ -1,0 +1,5 @@
+ns. 315360000 A 127.0.0.1
+ns.telematik. 315360000 A 127.0.0.20
+telematik. 315360000 NS ns.telematik.
+ns.fuberlin. 315360000 A 127.0.0.30
+fuberlin. 315360000 NS ns.fuberlin.

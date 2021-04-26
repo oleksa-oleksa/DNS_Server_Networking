@@ -1,24 +1,38 @@
+/*
+* udp.h
+*
+* UDP Server Interface
+*
+* Oleksandra Baga
+* Milos Budimir
+* Jannes Volkens
+* Michael Zent
+*
+* Telematik, Prof. M. Wählisch
+* WS 2020/21 FU Berlin
+*/
+
 #if (__OSX__) ||  (__APPLE__)
 #define MSG_CONFIRM 0x800	/* Confirm path validity */
 #endif
 
-#ifndef _UDP_H_
-#define _UDP_H_
+#ifndef _UDP_H
+#define _UDP_H
+
 #define UDPPORT 53053
 #define BUFSIZE 4096
 #define SOCKERR "Error: No socket - failed to create or bind\n"
 
 #include <unistd.h>
-#include <string.h>
+#include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <cstring>
 
 using namespace std;
 
-namespace udp
-{
 /*
 * A UDP server/client
 */
@@ -39,11 +53,12 @@ public:
         m_locaddr.sin_port = htons(port);
 
         // create and bind local socket
-        if((m_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) >= 0) {
+        if((m_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) >= 0)
+        {
             int enable = 1;
-            if (setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+            if(setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
                 perror("setsockopt(SO_REUSEADDR) failed");
-            if ((::bind(m_sock, (struct sockaddr *) &m_locaddr, m_addrlen)) < 0)
+            if((::bind(m_sock, (struct sockaddr*)&m_locaddr, m_addrlen)) < 0)
                 m_sock = -1;
         }
     }
@@ -105,6 +120,4 @@ private:
     char m_buf[BUFSIZE];
 };
 
-}
-
-#endif
+#endif /*_UDP_H */

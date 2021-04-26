@@ -1,28 +1,31 @@
-# prog: src/authorative_server.c src/stub_resolver.c 
-#	gcc -o server src/authorative_server.c -l json-c
-#	gcc -o client src/stub_resolver.c -l json-c
+# Makefile
+#
+# Oleksandra Baga
+# Milos Budimir
+# Jannes Volkens
+# Michael Zent
+#
+# Telematik, Prof. M. Wählisch
+# WS 2020/21 FU Berlin
 
-AUTH = server
-STUB = client
-RESO = resolver
+AUTH = authns
+RRES = recres
+STUB = stub
 
 CXX = g++
-CXXFLAGS = -Wall -O2 -std=c++11
-LIBS = -ljson-c
+CXXFLAGS = -std=c++11 -Wall -Wno-deprecated -O2
+LIBS = -ljsoncpp
 
-all: $(AUTH) $(STUB) $(DB) $(RESO)
+all: $(AUTH) $(RRES) $(STUB)
 
 $(AUTH):
-	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/authorative_server.cpp $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) src/authns.cpp $(LIBS) -o $@
 
-$(DB):
-	$(CXX) $(CXXFLAGS) src/dns_db.cpp $(LIBS) -o $@
+$(RRES):
+	$(CXX) $(CXXFLAGS) src/recres.cpp $(LIBS) -o $@
 
 $(STUB):
-	$(CXX) $(CXXFLAGS) src/stub_resolver.cpp $(LIBS) -o $@
-
-$(RESO):
-	$(CXX) $(CXXFLAGS) src/dns_db.cpp src/recursive_resolver.cpp $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) src/stub.cpp $(LIBS) -o $@
 
 clean:
-	rm $(AUTH) $(STUB) $(DB) $(RESO)
+	rm $(AUTH) $(RRES) $(STUB)
