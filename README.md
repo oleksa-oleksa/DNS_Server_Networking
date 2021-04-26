@@ -6,7 +6,7 @@ In  this  project,  we  got  hands-on  experiences  with  core  services  runnin
 
 The goal is to implement basic functionalities of a stub resolver, a recursive resolver, as well asan authoritative DNS server, and to operate namespaces.  Approach should be distributed and scalable.  
 
-**Milestones:
+**Milestones:**
 
 (a)  Your stub resolver is able to request an A record from the authorative server.
 
